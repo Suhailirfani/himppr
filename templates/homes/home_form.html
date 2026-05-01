@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 700px; margin: 0 auto;">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Head of Household</label>
+                {{ form.name }}
+                {% for error in form.name.errors %}<small style="color: var(--danger);">{{ error }}</small>{% endfor %}
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">House Name</label>
+                {{ form.house_name }}
+                {% for error in form.house_name.errors %}<small style="color: var(--danger);">{{ error }}</small>{% endfor %}
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Home Type</label>
+                {{ form.home_type }}
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Contact Number</label>
+                {{ form.contact_number }}
+            </div>
+            <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Address</label>
+                {{ form.address }}
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                {{ form.is_active }}
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Is Active</label>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                {{ form.fee_exception }}
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Fee Exception (Poor Family)</label>
+            </div>
+            
+            {% if not home_obj or not home_obj.user_account %}
+            <div style="grid-column: span 2; margin-top: 10px; padding: 15px; background: rgba(108, 92, 231, 0.05); border-radius: 12px; border: 1px dashed var(--accent);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="create_user_account" id="id_create_user">
+                    <label for="id_create_user" style="font-weight: 700; color: var(--accent); font-size: 14px;">
+                        <i class="fas fa-user-plus"></i> Create User Account for this Home
+                    </label>
+                </div>
+                <p style="margin: 8px 0 0 28px; font-size: 12px; color: var(--text-muted);">
+                    If checked, a "Home Member" user will be created with the username matching their name. Default password will be <strong>madrasa123</strong>.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="margin-top: 32px; display: flex; gap: 15px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">
+                Save Home Details
+            </button>
+            <a href="{% url 'homes:home_list' %}" class="btn" style="flex: 1; justify-content: center; background: #eee; color: #333;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-input {
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: white;
+        font-size: 14px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    .form-input:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+    }
+    input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent);
+    }
+</style>
+{% endblock %}

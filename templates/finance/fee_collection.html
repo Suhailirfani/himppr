@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Fee Collection | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}Fee Collection & Search{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+    <div class="glass-card">
+        <h3>Total Outstanding Dues</h3>
+        <p style="font-size: 32px; font-weight: 700; color: var(--danger); margin-top: 10px;">₹{{ total_due|floatformat:2 }}</p>
+        <p style="color: var(--text-muted); margin-top: 5px;">Overall balance to be collected.</p>
+    </div>
+    
+    <div class="glass-card" style="display: flex; flex-direction: column; justify-content: center; gap: 15px;">
+        <form method="get" style="display: flex; gap: 10px;">
+            <input type="text" name="q" placeholder="Search home or house name..." value="{{ query }}" style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); font-size: 14px;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <h2>Homes & Collections</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Home / Head</th>
+                <th>House Name</th>
+                <th>Type</th>
+                <th>Students</th>
+                <th>Advance Balance</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in homes %}
+            <tr>
+                <td><strong>{{ h.name }}</strong></td>
+                <td>{{ h.house_name|default:"-" }}</td>
+                <td><span class="badge {% if h.home_type == 'member' %}primary{% else %}warning{% endif %}">{{ h.get_home_type_display }}</span></td>
+                <td><span class="badge" style="background: #eee; color: #333;">{{ h.students.count }}</span></td>
+                <td style="color: var(--success); font-weight: 600;">₹{{ h.advance_balance }}</td>
+                <td>
+                    <a href="{% url 'finance:home_finance_detail' h.pk %}" class="btn" style="background: rgba(108, 92, 231, 0.1); color: var(--accent);">
+                        <i class="fas fa-eye"></i> View Finance
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 30px;">No homes found matching your search.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="table-container" style="margin-top: 32px;">
+    <div class="table-header">
+        <h2>Latest Global Invoices</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Home</th>
+                <th>Month</th>
+                <th>Total</th>
+                <th>Paid</th>
+                <th>Balance</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in latest_invoices %}
+            <tr>
+                <td><strong>{{ invoice.home.name }}</strong></td>
+                <td>{{ invoice.month|date:"F Y" }}</td>
+                <td>₹{{ invoice.total_amount }}</td>
+                <td>₹{{ invoice.amount_paid }}</td>
+                <td style="font-weight: 600;">₹{{ invoice.balance }}</td>
+                <td>
+                    {% if invoice.status == 'paid' %}
+                    <span class="badge success">Paid</span>
+                    {% else %}
+                    <span class="badge danger">Due</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

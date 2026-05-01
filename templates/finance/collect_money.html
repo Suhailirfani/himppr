@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Collect Money from {{ home.name }}{% endblock %}
+{% block page_title %}Collect Money - {{ home.name }}{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 600px; margin: 0 auto;">
+    <div style="margin-bottom: 30px; padding: 20px; border-radius: 15px; background: rgba(255, 118, 117, 0.05); border: 1px dashed var(--danger);">
+        <h4 style="color: var(--danger); margin-bottom: 5px;">Outstanding Balance: ₹{{ total_due|floatformat:2 }}</h4>
+        <p style="font-size: 13px; color: var(--text-muted);">Current advance balance: ₹{{ home.advance_balance|floatformat:2 }}</p>
+    </div>
+
+    <form method="post" id="collectForm">
+        {% csrf_token %}
+        
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Amount to Pay (₹)</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" step="0.01" name="amount" id="payAmount" class="form-input" required placeholder="0.00">
+                    <button type="button" class="btn" style="background: var(--text-main); color: white; white-space: nowrap;" onclick="document.getElementById('payAmount').value = '{{ total_due }}'">
+                        Full Due
+                    </button>
+                </div>
+                <small id="advanceHint" style="color: var(--success); display: none;">Excess will be recorded as ₹0.00 advance.</small>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Payment Method</label>
+                <select name="payment_method" class="form-input">
+                    <option value="cash">Cash</option>
+                    <option value="bank">Bank Transfer</option>
+                    <option value="upi">UPI</option>
+                </select>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Date Received</label>
+                <input type="date" name="date" class="form-input" value="{{ today|date:'Y-m-d' }}">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Remarks (Optional)</label>
+                <textarea name="remarks" class="form-input" rows="2" placeholder="Any additional notes..."></textarea>
+            </div>
+        </div>
+
+        <div style="margin-top: 32px; display: flex; gap: 15px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">
+                Record Collection
+            </button>
+            <a href="{% url 'finance:home_finance_detail' home.pk %}" class="btn" style="flex: 1; justify-content: center; background: #eee; color: #333;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    const amountInput = document.getElementById('payAmount');
+    const advanceHint = document.getElementById('advanceHint');
+    const totalDue = parseFloat('{{ total_due }}');
+
+    amountInput.addEventListener('input', function() {
+        const val = parseFloat(this.value) || 0;
+        if (val > totalDue) {
+            const advance = (val - totalDue).toFixed(2);
+            advanceHint.style.display = 'block';
+            advanceHint.innerText = 'Excess will be recorded as ₹' + advance + ' advance.';
+        } else {
+            advanceHint.style.display = 'none';
+        }
+    });
+</script>
+
+<style>
+    .form-input {
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: white;
+        font-size: 14px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    .form-input:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+    }
+</style>
+{% endblock %}

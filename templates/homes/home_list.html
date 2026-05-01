@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Management | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}Home Management{% endblock %}
+
+{% block content %}
+<div class="top-header" style="margin-bottom: 20px;">
+    <p style="color: var(--text-muted);">Manage member and non-member households.</p>
+    <a href="{% url 'homes:home_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Home</a>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <h2>Registered Homes</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Name / Head</th>
+                <th>House Name</th>
+                <th>Type</th>
+                <th>Contact</th>
+                <th>Students</th>
+                <th>Exception</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for home in homes %}
+            <tr>
+                <td><strong>{{ home.name }}</strong></td>
+                <td>{{ home.house_name|default:"-" }}</td>
+                <td>
+                    <span class="badge {% if home.home_type == 'member' %}primary{% else %}warning{% endif %}">
+                        {{ home.get_home_type_display }}
+                    </span>
+                </td>
+                <td>{{ home.contact_number|default:"-" }}</td>
+                <td>
+                    <span class="badge" style="background: #eee; color: #333;">
+                        {{ home.students.count }}
+                    </span>
+                </td>
+                <td>
+                    {% if home.fee_exception %}
+                    <span class="badge success">Yes (Poor)</span>
+                    {% else %}
+                    <span class="badge" style="background: #f1f3f5; color: #adb5bd;">No</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="{% url 'homes:home_update' home.pk %}" class="btn" style="padding: 6px 12px; background: rgba(108, 92, 231, 0.1); color: var(--accent);">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'homes:home_delete' home.pk %}" class="btn" style="padding: 6px 12px; background: rgba(255, 118, 117, 0.1); color: var(--danger);">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

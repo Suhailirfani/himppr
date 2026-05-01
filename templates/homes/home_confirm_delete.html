@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Home | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}Delete Home{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 500px; margin: 0 auto; text-align: center; padding: 40px;">
+    <div style="width: 70px; height: 70px; background: rgba(255, 118, 117, 0.1); color: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 32px;">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h2 style="margin-bottom: 12px;">Confirm Deletion</h2>
+    <p style="color: var(--text-muted); margin-bottom: 32px;">
+        Are you sure you want to delete <strong>{{ home_obj.name }}</strong>'s home record? This will also affect any linked student records.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: 15px;">
+            <button type="submit" class="btn" style="flex: 1; justify-content: center; background: var(--danger); color: white;">
+                Yes, Delete
+            </button>
+            <a href="{% url 'homes:home_list' %}" class="btn" style="flex: 1; justify-content: center; background: #eee; color: #333;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

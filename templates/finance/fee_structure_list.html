@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Monthly Fee Fixing | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}Monthly Fee Fixing{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="table-header">
+        <h2>Fee Structures</h2>
+        <a href="{% url 'finance:fee_structure_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Fee
+        </a>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Home Type</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for structure in structures %}
+            <tr>
+                <td><strong>{{ structure.name }}</strong></td>
+                <td>
+                    {% if structure.home_type == 'member' %}
+                    <span class="badge primary">Member</span>
+                    {% else %}
+                    <span class="badge warning">Non-Member</span>
+                    {% endif %}
+                </td>
+                <td style="font-weight: 700;">₹{{ structure.amount }}</td>
+                <td>
+                    {% if structure.is_active %}
+                    <span class="badge success">Active</span>
+                    {% else %}
+                    <span class="badge danger">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'finance:fee_structure_update' structure.id %}" class="btn" style="padding: 5px 10px; background: #eee;">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 30px;">No fee structures fixed yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="glass-card" style="margin-top: 24px;">
+    <h3><i class="fas fa-info-circle"></i> How it works</h3>
+    <p style="color: var(--text-muted); margin-top: 10px; font-size: 14px;">
+        These fees are used by the system to automatically generate monthly invoices for all households. 
+        If you change a fee here, it will apply to the **next** month's invoice generation.
+    </p>
+</div>
+{% endblock %}

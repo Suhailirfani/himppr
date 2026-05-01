@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Total Finance | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}Total Finance Overview{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <div class="glass-card stat-card">
+        <div class="stat-icon primary">
+            <i class="fas fa-wallet"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Total Income (Main Fund)</h3>
+            <div class="value">₹{{ total_income|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="glass-card stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-file-invoice-dollar"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Total Expense (Main Fund)</h3>
+            <div class="value">₹{{ total_expense|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="glass-card stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-piggy-bank"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Available Balance</h3>
+            <div class="value">₹{{ main_balance|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <h2>Recent Transactions (Main Fund)</h2>
+        <div style="display: flex; gap: 12px;">
+            <a href="{% url 'finance:transaction_create' %}?type=income" class="btn" style="background: var(--success); color: white;">
+                <i class="fas fa-plus"></i> Income
+            </a>
+            <a href="{% url 'finance:transaction_create' %}?type=expense" class="btn" style="background: var(--danger); color: white;">
+                <i class="fas fa-minus"></i> Expense
+            </a>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>From/To</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in recent_transactions %}
+            <tr>
+                <td>{{ tx.date|date:"d M, Y" }}</td>
+                <td>
+                    {% if tx.transaction_type == 'income' %}
+                    <span class="badge success">Income</span>
+                    {% else %}
+                    <span class="badge danger">Expense</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if tx.category %}
+                        {{ tx.category.name }}
+                    {% elif tx.invoice %}
+                        Fee Collection
+                    {% elif tx.transaction_type == 'income' and "Advance" in tx.remarks %}
+                        <span style="color: var(--success); font-weight: 600;">Advance Payment</span>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td style="font-weight: 600;">₹{{ tx.amount }}</td>
+                <td>{{ tx.get_payment_method_display }}</td>
+                <td>{{ tx.received_from_or_paid_to|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 30px;">No transactions found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

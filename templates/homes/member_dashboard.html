@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Home Dashboard | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}Welcome, {{ home.name }}{% endblock %}
+
+{% block content %}
+{% if no_profile %}
+<div class="glass-card" style="text-align: center; padding: 50px;">
+    <div style="font-size: 50px; color: var(--accent); margin-bottom: 20px;">
+        <i class="fas fa-home-user"></i>
+    </div>
+    <h2>Account Not Linked</h2>
+    <p style="color: var(--text-muted);">Your user account has not been linked to a household yet. Please contact the Madrasa office to link your profile.</p>
+    <form id="logout-form-noproc" action="{% url 'accounts:logout' %}" method="post" style="display: none;">
+        {% csrf_token %}
+    </form>
+    <a href="javascript:void(0)" onclick="document.getElementById('logout-form-noproc').submit();" class="btn btn-primary" style="margin-top: 20px;">Logout</a>
+</div>
+{% else %}
+<div class="dashboard-grid">
+    <div class="glass-card stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Current Dues</h3>
+            <div class="value" style="color: var(--danger);">₹{{ total_due|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="glass-card stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-coins"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Advance Balance</h3>
+            <div class="value" style="color: var(--success);">₹{{ home.advance_balance|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="glass-card stat-card">
+        <div class="stat-icon primary">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Students</h3>
+            <div class="value">{{ students.count }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-grid" style="grid-template-columns: 2fr 1fr; margin-top: 24px;">
+    <div class="table-container" style="margin: 0;">
+        <div class="table-header">
+            <h2>Financial History</h2>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title / Month</th>
+                    <th>Amount</th>
+                    <th>Paid</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td><strong>{{ inv.title }}</strong><br><small>{{ inv.month|date:"F Y" }}</small></td>
+                    <td>₹{{ inv.total_amount }}</td>
+                    <td>₹{{ inv.amount_paid }}</td>
+                    <td>
+                        {% if inv.status == 'paid' %}
+                        <span class="badge success">Paid</span>
+                        {% elif inv.status == 'partial' %}
+                        <span class="badge warning">Partial</span>
+                        {% else %}
+                        <span class="badge danger">Due</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 20px;">No financial records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="glass-card" style="margin: 0;">
+        <div class="table-header">
+            <h2>Family Members</h2>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+            {% for student in students %}
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 10px;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                    {{ student.name|slice:":1" }}
+                </div>
+                <div>
+                    <h4 style="margin: 0; font-size: 14px;">{{ student.name }}</h4>
+                    <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Grade: {{ student.grade }} | Age: {{ student.age }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-muted); text-align: center;">No student records found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

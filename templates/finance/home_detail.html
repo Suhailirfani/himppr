@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ home.name }} Finance | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}{{ home.name }} - Individual Finance{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <div class="glass-card stat-card">
+        <div class="stat-icon warning">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Total Outstanding</h3>
+            <div class="value" style="color: var(--danger);">₹{{ total_balance|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="glass-card stat-card">
+        <div class="stat-icon success">
+            <i class="fas fa-coins"></i>
+        </div>
+        <div class="stat-details">
+            <h3>Advance Balance</h3>
+            <div class="value" style="color: var(--success);">₹{{ home.advance_balance|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="glass-card" style="display: flex; align-items: center; justify-content: center;">
+        <a href="{% url 'finance:collect_money' home.pk %}" class="btn btn-primary" style="padding: 15px 30px; font-size: 16px;">
+            <i class="fas fa-money-bill-wave"></i> Collect Money
+        </a>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <h2>Invoices & Dues</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Title / Month</th>
+                <th>Total Amount</th>
+                <th>Amount Paid</th>
+                <th>Balance</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inv in invoices %}
+            <tr>
+                <td><strong>{{ inv.title }}</strong><br><small>{{ inv.month|date:"F Y" }}</small></td>
+                <td>₹{{ inv.total_amount }}</td>
+                <td>₹{{ inv.amount_paid }}</td>
+                <td style="font-weight: 600;">₹{{ inv.balance }}</td>
+                <td>
+                    {% if inv.status == 'paid' %}
+                    <span class="badge success">Paid</span>
+                    {% elif inv.status == 'partial' %}
+                    <span class="badge warning">Partial</span>
+                    {% else %}
+                    <span class="badge danger">Due</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 30px;">No invoices found for this home.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="table-container" style="margin-top: 32px;">
+    <div class="table-header">
+        <h2>Recent Transactions</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in transactions %}
+            <tr>
+                <td>{{ tx.date|date:"d M, Y" }}</td>
+                <td>
+                    {% if tx.invoice %}
+                    <span class="badge primary">Fee Collection</span>
+                    {% elif "Advance" in tx.remarks %}
+                    <span class="badge success">Advance Payment</span>
+                    {% else %}
+                    <span class="badge">General</span>
+                    {% endif %}
+                </td>
+                <td style="font-weight: 600;">₹{{ tx.amount }}</td>
+                <td>{{ tx.get_payment_method_display }}</td>
+                <td>{{ tx.remarks|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 30px;">No transactions recorded for this home.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

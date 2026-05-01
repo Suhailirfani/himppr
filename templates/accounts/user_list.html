@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<div class="top-header" style="margin-bottom: 20px;">
+    <p style="color: var(--text-muted);">Manage committee and staff accounts.</p>
+    <a href="{% url 'accounts:user_create' %}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add New User</a>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <h2>System Users</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Staff Access</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td><strong>{{ user.username }}</strong></td>
+                <td>{{ user.get_full_name|default:user.username }}</td>
+                <td>
+                    <span class="badge {% if user.role == 'admin' %}primary{% else %}warning{% endif %}">
+                        {{ user.get_role_display }}
+                    </span>
+                </td>
+                <td>
+                    {% if user.is_active %}
+                    <span class="badge success">Active</span>
+                    {% else %}
+                    <span class="badge danger">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_staff %}
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i> Yes
+                    {% else %}
+                    <i class="fas fa-times-circle" style="color: var(--danger);"></i> No
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="{% url 'accounts:user_update' user.pk %}" class="btn" style="padding: 6px 12px; background: rgba(108, 92, 231, 0.1); color: var(--accent);">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'accounts:user_delete' user.pk %}" class="btn" style="padding: 6px 12px; background: rgba(255, 118, 117, 0.1); color: var(--danger);">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

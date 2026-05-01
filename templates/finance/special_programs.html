@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Special Programs | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}Special Programs Budgeting{% endblock %}
+
+{% block content %}
+<div class="top-header" style="margin-bottom: 20px;">
+    <p style="color: var(--text-muted);">Manage separate funds for events like Meelad. Surpluses are added back to the Main Fund, and shortages are covered by it.</p>
+    <a href="{% url 'finance:program_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> New Program</a>
+</div>
+
+<div class="dashboard-grid">
+    {% for program in programs %}
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+            <div>
+                <h3 style="font-size: 20px; font-weight: 700; color: var(--text-main);">{{ program.name }}</h3>
+                <span style="font-size: 13px; color: var(--text-muted);"><i class="fas fa-calendar"></i> {{ program.date|date:"d M, Y"|default:"TBA" }}</span>
+            </div>
+            {% if program.is_active %}
+            <span class="badge success">Active</span>
+            {% else %}
+            <span class="badge" style="background: #e2e8f0; color: var(--text-muted);">Closed</span>
+            {% endif %}
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; margin-bottom: 10px;">
+            <span style="color: var(--text-muted);">Target Budget</span>
+            <strong style="color: var(--text-main);">₹{{ program.target_budget }}</strong>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; padding-bottom: 10px; margin-bottom: 10px;">
+            <span style="color: var(--success);"><i class="fas fa-arrow-down"></i> Income</span>
+            <strong>₹{{ program.total_income }}</strong>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; margin-bottom: 10px;">
+            <span style="color: var(--danger);"><i class="fas fa-arrow-up"></i> Expense</span>
+            <strong>₹{{ program.total_expense }}</strong>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 15px; border-radius: 10px; background: {% if program.balance >= 0 %}rgba(0,184,148,0.1){% else %}rgba(255,118,117,0.1){% endif %};">
+            <span style="font-weight: 600;">Balance / Status</span>
+            <strong style="font-size: 18px; color: {% if program.balance >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+                ₹{{ program.balance }}
+                <br>
+                <small style="font-size: 11px; color: var(--text-muted); display: block; text-align: right; margin-top: 4px;">
+                    {% if program.balance > 0 %}
+                    (Surplus to Main Fund)
+                    {% elif program.balance < 0 %}
+                    (Shortage from Main Fund)
+                    {% else %}
+                    (Balanced)
+                    {% endif %}
+                </small>
+            </strong>
+        </div>
+        
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <a href="{% url 'finance:transaction_create' %}?program={{ program.id }}&type=income" class="btn" style="flex:1; background: rgba(0,184,148,0.1); color: var(--success); font-size: 13px; justify-content: center;">+ Income</a>
+            <a href="{% url 'finance:transaction_create' %}?program={{ program.id }}&type=expense" class="btn" style="flex:1; background: rgba(255,118,117,0.1); color: var(--danger); font-size: 13px; justify-content: center;">- Expense</a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 50px; background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+        <i class="fas fa-star" style="font-size: 40px; color: var(--text-muted); margin-bottom: 20px; opacity: 0.5;"></i>
+        <h3>No Special Programs Found</h3>
+        <p style="color: var(--text-muted); margin: 10px 0 20px;">Create a program like Meelad to manage its dedicated budget.</p>
+        <a href="{% url 'finance:program_create' %}" class="btn btn-primary">Create Program</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

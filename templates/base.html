@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hayathul Islam Madrasa{% endblock title %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+    <div class="mobile-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-mosque" style="color: var(--accent); font-size: 20px;"></i>
+            <span style="font-weight: 700;">H.I. Madrasa</span>
+        </div>
+        <div class="mobile-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+    </script>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon">
+                <i class="fas fa-mosque"></i>
+            </div>
+            <div class="logo-text">Hayathul Islam<br>Madrasa</div>
+        </div>
+        <ul class="nav-links">
+            {% if user.role == 'home' %}
+            <li class="nav-item">
+                <a href="{% url 'homes:member_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'member_dashboard' %}active{% endif %}">
+                    <i class="fas fa-home"></i> My Dashboard
+                </a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a href="{% url 'finance:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-pie"></i> Total Finance
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'finance:fee_collection' %}" class="nav-link {% if request.resolver_match.url_name == 'fee_collection' %}active{% endif %}">
+                    <i class="fas fa-hand-holding-usd"></i> Fee Collection
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'finance:special_programs' %}" class="nav-link {% if request.resolver_match.url_name == 'special_programs' %}active{% endif %}">
+                    <i class="fas fa-star"></i> Special Programs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'finance:reports' %}" class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                    <i class="fas fa-file-contract"></i> Reports
+                </a>
+            </li>
+            {% endif %}
+
+            {% if user.role == 'admin' or user.is_superuser %}
+            <li class="nav-item" style="margin-top: 30px; padding: 0 16px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Administration</span>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'accounts:user_list' %}" class="nav-link {% if 'accounts' in request.resolver_match.app_name %}active{% endif %}">
+                    <i class="fas fa-users-cog"></i> Manage Users
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'homes:home_list' %}" class="nav-link {% if 'homes' in request.resolver_match.app_name %}active{% endif %}">
+                    <i class="fas fa-home"></i> Manage Homes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'finance:fee_structure_list' %}" class="nav-link {% if 'fee_structure' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-tools"></i> Monthly Fee Fixing
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="nav-item" style="margin-top: auto;">
+                <form id="logout-form" action="{% url 'accounts:logout' %}" method="post" style="display: none;">
+                    {% csrf_token %}
+                </form>
+                <a href="javascript:void(0)" onclick="document.getElementById('logout-form').submit();" class="nav-link" style="color: #ff7675;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="top-header">
+            <h1 class="page-title">{% block page_title %}Dashboard{% endblock page_title %}</h1>
+            <div class="user-profile">
+                <span>Welcome, <strong>{{ request.user.username|default:"Committee/Staff" }}</strong></span>
+                <div class="avatar" style="position: relative; cursor: pointer;" onclick="document.getElementById('logout-form').submit();" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <form id="logout-form" action="/admin/logout/" method="post" style="display: none;">
+                    {% csrf_token %}
+                </form>
+            </div>
+        </header>
+
+        {% block content %}
+        {% endblock content %}
+    </main>
+
+</body>
+</html>
