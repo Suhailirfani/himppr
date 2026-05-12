@@ -6,23 +6,40 @@ class Home(models.Model):
         ('non_member', 'Non-Member Home'),
     ]
     name = models.CharField(max_length=150, help_text="Family Name or Head of Household")
+    name_en = models.CharField(max_length=150, blank=True, help_text="Name in English")
     house_name = models.CharField(max_length=150, blank=True)
     home_type = models.CharField(max_length=20, choices=HOME_TYPE_CHOICES, default='member')
     contact_number = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
+    area = models.CharField(max_length=150, blank=True, help_text="Locality or area of residence")
     
     is_active = models.BooleanField(default=True)
     fee_exception = models.BooleanField(default=False, help_text="Check if this home is exempted from paying fees (e.g., poor family)")
     advance_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Money paid in advance by this home")
 
+    uid = models.CharField(max_length=20, unique=True, blank=True, null=True, verbose_name="Home ID")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['name']
 
+    def save(self, *args, **kwargs):
+        if not self.uid:
+            # Generate a unique ID if not present
+            # We use the count + 1 to get a sequential ID
+            # Note: For high concurrency, this might need a more robust approach,
+            # but for this ERP it should be fine.
+            count = Home.objects.count()
+            self.uid = f'H-{(count + 1):04d}'
+            # Ensure uniqueness in case of deletions
+            while Home.objects.filter(uid=self.uid).exists():
+                count += 1
+                self.uid = f'H-{(count + 1):04d}'
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.name} ({self.get_home_type_display()})"
+        return f"{self.uid} - {self.name} ({self.get_home_type_display()})"
 
 
 class Student(models.Model):

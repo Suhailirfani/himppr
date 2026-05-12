@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Homes | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}Upload Homes via Excel{% endblock %}
+
+{% block content %}
+<div class="form-container" style="max-width: 600px; margin: 0 auto;">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert" style="padding: 15px; margin-bottom: 20px; border-radius: 8px; background-color: {% if message.tags == 'success' %}rgba(46, 213, 115, 0.1){% else %}rgba(255, 118, 117, 0.1){% endif %}; color: {% if message.tags == 'success' %}var(--success){% else %}var(--danger){% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card" style="padding: 30px; background: white; border-radius: 12px; box-shadow: var(--card-shadow);">
+        <h2 style="margin-bottom: 20px;">Upload Excel File</h2>
+        
+        <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid var(--accent);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <h4 style="margin: 0; color: var(--text-dark);">Expected Format</h4>
+                <a href="{% url 'homes:home_download_template' %}" class="btn" style="padding: 4px 10px; font-size: 12px; background: white; border: 1px solid var(--accent); color: var(--accent);"><i class="fas fa-download"></i> Download Template</a>
+            </div>
+            <p style="margin-bottom: 5px; font-size: 14px; color: var(--text-muted);">Your Excel file should have a header row and the following columns in order:</p>
+            <ol style="margin: 0; padding-left: 20px; font-size: 14px; color: var(--text-muted);">
+                <li><strong>Name</strong> (Required)</li>
+                <li><strong>House Name</strong> (Optional)</li>
+                <li><strong>Type</strong> ('member' or 'non_member')</li>
+                <li><strong>Contact</strong> (Optional)</li>
+                <li><strong>Address</strong> (Optional)</li>
+                <li><strong>Area</strong> (Optional)</li>
+                <li><strong>Fee Exception</strong> ('Yes' or 'No')</li>
+            </ol>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="excel_file" style="display: block; margin-bottom: 8px; font-weight: 500;">Select Excel File (.xlsx)</label>
+                <input type="file" name="excel_file" id="excel_file" accept=".xlsx, .xls" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;">
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;"><i class="fas fa-upload"></i> Upload Homes</button>
+                <a href="{% url 'homes:home_list' %}" class="btn" style="flex: 1; text-align: center; background: #f1f3f5; color: var(--text-dark);">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -39,11 +39,28 @@ class InvoiceForm(forms.ModelForm):
 class SpecialProgramForm(forms.ModelForm):
     class Meta:
         model = SpecialProgram
-        fields = ['name', 'date', 'target_budget', 'is_active']
+        fields = ['name', 'date', 'target_budget', 'per_member_amount', 'is_active']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-input'}),
             'date': forms.DateInput(attrs={'class': 'form-input', 'type': 'date'}),
             'target_budget': forms.NumberInput(attrs={'class': 'form-input'}),
+            'per_member_amount': forms.NumberInput(attrs={'class': 'form-input'}),
+        }
+
+class PreviousBalanceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = ['home', 'title', 'total_amount', 'month']
+        labels = {
+            'title': 'Particular',
+            'month': 'Date',
+            'total_amount': 'Balance Amount'
+        }
+        widgets = {
+            'home': forms.Select(attrs={'class': 'form-input'}),
+            'title': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g., Subscription Fee, Special Fund'}),
+            'month': forms.DateInput(attrs={'class': 'form-input', 'type': 'date'}),
+            'total_amount': forms.NumberInput(attrs={'class': 'form-input'}),
         }
 
 class PaymentRecordForm(forms.Form):

@@ -1,51 +1,83 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load language_tags %}
 
-{% block title %}Reports | Hayathul Islam Madrasa{% endblock %}
-{% block page_title %}Financial Reports{% endblock %}
+{% block title %}{{ "Reports"|trans_finance:lang }} | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}{{ "Financial Reports"|trans_finance:lang }}{% endblock %}
 
 {% block content %}
+<!-- Language Switcher -->
+<div class="glass-card" style="margin-bottom: 24px; padding: 10px; display: flex; gap: 10px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 300px;">
+    <a href="?lang=ml&tab={{ active_tab }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" class="btn" style="flex: 1; text-align: center; {% if lang == 'ml' %}background: var(--accent); color: white;{% else %}background: #f8f9fa; color: var(--text-muted);{% endif %} border-radius: 8px; font-weight: 700; padding: 8px;">മലയാളം</a>
+    <a href="?lang=en&tab={{ active_tab }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" class="btn" style="flex: 1; text-align: center; {% if lang == 'en' %}background: var(--accent); color: white;{% else %}background: #f8f9fa; color: var(--text-muted);{% endif %} border-radius: 8px; font-weight: 700; padding: 8px;">English</a>
+</div>
 <div class="glass-card" style="margin-bottom: 24px; padding: 20px;">
     <form method="get" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
         <div style="display: flex; flex-direction: column; gap: 5px;">
-            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Start Date</label>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">{{ "Start Date"|trans_finance:lang }}</label>
             <input type="date" name="start_date" value="{{ request.GET.start_date }}" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd;">
         </div>
         <div style="display: flex; flex-direction: column; gap: 5px;">
-            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">End Date</label>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">{{ "End Date"|trans_finance:lang }}</label>
             <input type="date" name="end_date" value="{{ request.GET.end_date }}" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd;">
         </div>
         <div style="display: flex; flex-direction: column; gap: 5px;">
-            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Category</label>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">{{ "Category"|trans_finance:lang }}</label>
             <select name="category" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd;">
-                <option value="">All Categories</option>
+                <option value="">{{ "All Categories"|trans_finance:lang }}</option>
                 {% for cat in categories %}
                 <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
                 {% endfor %}
             </select>
         </div>
         <div style="display: flex; flex-direction: column; gap: 5px;">
-            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Type</label>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">{{ "Type"|trans_finance:lang }}</label>
             <select name="type" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd;">
-                <option value="">All Types</option>
-                <option value="income" {% if request.GET.type == 'income' %}selected{% endif %}>Income</option>
-                <option value="expense" {% if request.GET.type == 'expense' %}selected{% endif %}>Expense</option>
+                <option value="">{{ "All Types"|trans_finance:lang }}</option>
+                <option value="income" {% if request.GET.type == 'income' %}selected{% endif %}>{{ "Income"|trans_finance:lang }}</option>
+                <option value="expense" {% if request.GET.type == 'expense' %}selected{% endif %}>{{ "Expense"|trans_finance:lang }}</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary" style="padding: 9px 20px;">
-            <i class="fas fa-filter"></i> Filter
+            <input type="hidden" name="lang" value="{{ lang }}">
+            <input type="hidden" name="tab" value="{{ active_tab }}">
+            <button type="submit" class="btn btn-primary" style="padding: 9px 20px;">
+            <i class="fas fa-filter"></i> {{ "Filter"|trans_finance:lang }}
         </button>
-        <a href="{% url 'finance:reports' %}" class="btn" style="padding: 9px 20px; background: #eee; color: #333;">Clear</a>
+        <a href="{% url 'finance:reports' %}" class="btn" style="padding: 9px 20px; background: #eee; color: #333;">{{ "Clear"|trans_finance:lang }}</a>
     </form>
 </div>
 
+<div class="glass-card" style="margin-bottom: 24px; padding: 10px; display: flex; gap: 10px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+    <a href="?tab=summary&lang={{ lang }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" 
+       style="flex: 1; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.3s;
+              {% if active_tab == 'summary' %}background: var(--accent); color: white;{% else %}color: var(--text-muted); background: transparent;{% endif %}">
+        <i class="fas fa-chart-pie"></i> {{ "Summary"|trans_finance:lang }}
+    </a>
+    <a href="?tab=daily&lang={{ lang }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" 
+       style="flex: 1; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.3s;
+              {% if active_tab == 'daily' %}background: var(--accent); color: white;{% else %}color: var(--text-muted); background: transparent;{% endif %}">
+        <i class="fas fa-calendar-day"></i> {{ "Daily Accounts"|trans_finance:lang }}
+    </a>
+    <a href="?tab=monthly&lang={{ lang }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" 
+       style="flex: 1; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.3s;
+              {% if active_tab == 'monthly' %}background: var(--accent); color: white;{% else %}color: var(--text-muted); background: transparent;{% endif %}">
+        <i class="fas fa-calendar-alt"></i> {{ "Monthly Accounts"|trans_finance:lang }}
+    </a>
+    <a href="?tab=items&lang={{ lang }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" 
+       style="flex: 1; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: all 0.3s;
+              {% if active_tab == 'items' %}background: var(--accent); color: white;{% else %}color: var(--text-muted); background: transparent;{% endif %}">
+        <i class="fas fa-tags"></i> {{ "Item-wise Accounts"|trans_finance:lang }}
+    </a>
+</div>
+
+{% if active_tab == 'summary' %}
 <div class="dashboard-grid">
     <div class="glass-card stat-card">
         <div class="stat-icon success">
             <i class="fas fa-arrow-down"></i>
         </div>
         <div class="stat-details">
-            <h3>Total Income</h3>
+            <h3>{{ "Total Income"|trans_finance:lang }}</h3>
             <div class="value">₹{{ total_income|floatformat:2 }}</div>
         </div>
     </div>
@@ -54,7 +86,7 @@
             <i class="fas fa-arrow-up"></i>
         </div>
         <div class="stat-details">
-            <h3>Total Expense</h3>
+            <h3>{{ "Total Expense"|trans_finance:lang }}</h3>
             <div class="value">₹{{ total_expense|floatformat:2 }}</div>
         </div>
     </div>
@@ -63,39 +95,36 @@
             <i class="fas fa-balance-scale"></i>
         </div>
         <div class="stat-details">
-            <h3>Net Total</h3>
+            <h3>{{ "Net Total"|trans_finance:lang }}</h3>
             <div class="value">₹{{ net_total|floatformat:2 }}</div>
         </div>
     </div>
 </div>
+{% endif %}
 
 <div class="dashboard-grid" style="grid-template-columns: 1fr; margin-top: 24px;">
+    {% if active_tab == 'items' %}
     <div class="table-container" style="margin: 0;">
         <div class="table-header">
-            <h2>Category-wise Summary</h2>
+            <h2>{{ "Item-wise Accounts"|trans_finance:lang }} ({{ "By Category"|trans_finance:lang }})</h2>
         </div>
         <table style="width: 100%;">
             <thead>
                 <tr>
-                    <th>Category Name</th>
-                    <th>Type</th>
-                    <th style="text-align: right;">Total Amount</th>
+                    <th>{{ "Category Name"|trans_finance:lang }}</th>
+                    <th>{{ "Type"|trans_finance:lang }}</th>
+                    <th style="text-align: right;">{{ "Total Amount"|trans_finance:lang }}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in category_summary %}
                 <tr>
-                    <td>
-                        <a href="{% url 'finance:reports' %}?category={{ item.category__id }}&type={{ item.transaction_type }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}" 
-                           style="color: var(--accent); text-decoration: none; font-weight: 700;">
-                            {{ item.category__name|default:"Uncategorized" }}
-                        </a>
-                    </td>
+                    <td>{{ item.category__name|default:"Uncategorized" }}</td>
                     <td>
                         {% if item.transaction_type == 'income' %}
-                        <span class="badge success">Income</span>
+                        <span class="badge success">{{ "Income"|trans_finance:lang }}</span>
                         {% else %}
-                        <span class="badge danger">Expense</span>
+                        <span class="badge danger">{{ "Expense"|trans_finance:lang }}</span>
                         {% endif %}
                     </td>
                     <td style="text-align: right; font-weight: 700;">₹{{ item.total|floatformat:2 }}</td>
@@ -108,30 +137,196 @@
             </tbody>
         </table>
     </div>
+    {% elif active_tab == 'daily' %}
+    <div style="width: 100%;">
+        {% for day, data in daily_data.items %}
+        <div class="glass-card" style="margin-bottom: 25px; padding: 0; overflow: hidden; border: 1px solid #eee; background: white; transform: none !important;">
+            <div style="background: #f8f9fa; padding: 12px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin: 0; font-size: 16px; color: var(--accent); font-weight: 700;">{{ day|date:"d F, Y" }}</h3>
+                <div style="display: flex; gap: 20px; align-items: center;">
+                    <div style="text-align: right;">
+                        <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">{{ "Opening"|trans_finance:lang }}</div>
+                        <div style="font-weight: 700; font-size: 13px;">₹{{ data.opening_balance|floatformat:2 }}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">{{ "Net"|trans_finance:lang }}</div>
+                        <div style="font-weight: 700; font-size: 13px; color: {% if data.net_balance >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+                            {% if data.net_balance >= 0 %}+{% endif %}₹{{ data.net_balance|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div style="text-align: right; padding-left: 15px; border-left: 2px solid #eee;">
+                        <div style="font-size: 10px; color: var(--accent); text-transform: uppercase; font-weight: 800;">{{ "Closing"|trans_finance:lang }}</div>
+                        <div style="font-weight: 800; font-size: 16px; color: var(--text-main);">₹{{ data.closing_balance|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0;">
+                <!-- Income Section -->
+                <div style="padding: 15px 20px; border-right: 1px solid #eee;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(0, 184, 148, 0.1); padding-bottom: 5px;">
+                        <h4 style="color: var(--success); margin: 0; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-plus-circle"></i> {{ "Income"|trans_finance:lang }}
+                        </h4>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        {% for item in data.income_items %}
+                        <tr>
+                            <td style="padding: 6px 0; font-size: 13px; border-bottom: 1px solid #fcfcfc;">{{ item.name }}</td>
+                            <td style="padding: 6px 0; text-align: right; font-weight: 600; border-bottom: 1px solid #fcfcfc;">₹{{ item.total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" style="padding: 10px 0; text-align: center; color: var(--text-muted); font-size: 12px;">No income.</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <td style="padding: 10px 0 0 0; font-weight: 700; font-size: 13px;">{{ "Daily Income"|trans_finance:lang }}</td>
+                            <td style="padding: 10px 0 0 0; text-align: right; font-weight: 800; color: var(--success); font-size: 14px;">₹{{ data.income_total|floatformat:2 }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Expense Section -->
+                <div style="padding: 15px 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255, 118, 117, 0.1); padding-bottom: 5px;">
+                        <h4 style="color: var(--danger); margin: 0; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-minus-circle"></i> {{ "Expense"|trans_finance:lang }}
+                        </h4>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        {% for item in data.expense_items %}
+                        <tr>
+                            <td style="padding: 6px 0; font-size: 13px; border-bottom: 1px solid #fcfcfc;">{{ item.name }}</td>
+                            <td style="padding: 6px 0; text-align: right; font-weight: 600; border-bottom: 1px solid #fcfcfc;">₹{{ item.total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" style="padding: 10px 0; text-align: center; color: var(--text-muted); font-size: 12px;">No expenses.</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <td style="padding: 10px 0 0 0; font-weight: 700; font-size: 13px;">{{ "Daily Expense"|trans_finance:lang }}</td>
+                            <td style="padding: 10px 0 0 0; text-align: right; font-weight: 800; color: var(--danger); font-size: 14px;">₹{{ data.expense_total|floatformat:2 }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="glass-card" style="text-align: center; padding: 40px;">
+            <p style="color: var(--text-muted);">No daily transactions found.</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif active_tab == 'monthly' %}
+    <div style="width: 100%;">
+        {% for month, data in monthly_data.items %}
+        <div class="glass-card" style="margin-bottom: 30px; padding: 0; overflow: hidden; border: 1px solid #eee; background: white; transform: none !important;">
+            <div style="background: #f8f9fa; padding: 15px 25px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <h3 style="margin: 0; font-size: 18px; color: var(--accent); font-weight: 700;">{{ month|date:"F Y" }}</h3>
+                <div style="display: flex; gap: 30px; align-items: center;">
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">{{ "Opening Balance"|trans_finance:lang }}</div>
+                        <div style="font-weight: 700; font-size: 15px;">₹{{ data.opening_balance|floatformat:2 }}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">{{ "Monthly Net"|trans_finance:lang }}</div>
+                        <div style="font-weight: 700; font-size: 15px; color: {% if data.net_balance >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+                            {% if data.net_balance >= 0 %}+{% endif %}₹{{ data.net_balance|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div style="text-align: right; padding-left: 20px; border-left: 2px solid #eee;">
+                        <div style="font-size: 11px; color: var(--accent); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">{{ "Closing Balance"|trans_finance:lang }}</div>
+                        <div style="font-weight: 800; font-size: 20px; color: var(--text-main);">₹{{ data.closing_balance|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0;">
+                <!-- Income Section -->
+                <div style="padding: 25px; border-right: 1px solid #eee;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid rgba(0, 184, 148, 0.1); padding-bottom: 10px;">
+                        <h4 style="color: var(--success); margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-plus-circle"></i> {{ "Income Breakdown"|trans_finance:lang }}
+                        </h4>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        {% for item in data.income_items %}
+                        <tr>
+                            <td style="padding: 10px 0; font-size: 14px; border-bottom: 1px solid #f9f9f9;">{{ item.name }}</td>
+                            <td style="padding: 10px 0; text-align: right; font-weight: 600; border-bottom: 1px solid #f9f9f9;">₹{{ item.total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" style="padding: 20px 0; text-align: center; color: var(--text-muted); font-size: 13px;">No income recorded.</td>
+                        </tr>
+                        {% endfor %}
+                        <tr style="background: #fff;">
+                            <td style="padding: 15px 0 0 0; font-weight: 700; font-size: 15px;">{{ "Total Monthly Income"|trans_finance:lang }}</td>
+                            <td style="padding: 15px 0 0 0; text-align: right; font-weight: 800; color: var(--success); font-size: 16px;">₹{{ data.income_total|floatformat:2 }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Expense Section -->
+                <div style="padding: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid rgba(255, 118, 117, 0.1); padding-bottom: 10px;">
+                        <h4 style="color: var(--danger); margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-minus-circle"></i> {{ "Expense Breakdown"|trans_finance:lang }}
+                        </h4>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        {% for item in data.expense_items %}
+                        <tr>
+                            <td style="padding: 10px 0; font-size: 14px; border-bottom: 1px solid #f9f9f9;">{{ item.name }}</td>
+                            <td style="padding: 10px 0; text-align: right; font-weight: 600; border-bottom: 1px solid #f9f9f9;">₹{{ item.total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" style="padding: 20px 0; text-align: center; color: var(--text-muted); font-size: 13px;">No expenses recorded.</td>
+                        </tr>
+                        {% endfor %}
+                        <tr style="background: #fff;">
+                            <td style="padding: 15px 0 0 0; font-weight: 700; font-size: 15px;">{{ "Total Monthly Expense"|trans_finance:lang }}</td>
+                            <td style="padding: 15px 0 0 0; text-align: right; font-weight: 800; color: var(--danger); font-size: 16px;">₹{{ data.expense_total|floatformat:2 }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="glass-card" style="text-align: center; padding: 50px;">
+            <p style="color: var(--text-muted);">No monthly data found for the selected period.</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 
 <div class="table-container">
     <div class="table-header">
-        <h2>Transactions</h2>
+        <h2>{{ "Transactions"|trans_finance:lang }}</h2>
         <button onclick="window.print()" class="btn" style="background: var(--text-main); color: white;">
-            <i class="fas fa-print"></i> Print Report
+            <i class="fas fa-print"></i> {{ "Print Report"|trans_finance:lang }}
         </button>
     </div>
     <table>
         <thead>
-            <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Category / Program</th>
-                <th>Amount</th>
-                <th>From/To</th>
-                <th>Remarks</th>
-            </tr>
+                <tr>
+                    <th>{{ "Date"|trans_finance:lang }}</th>
+                    <th>{{ "Type"|trans_finance:lang }}</th>
+                    <th>{{ "Category"|trans_finance:lang }}</th>
+                    <th>{{ "Amount"|trans_finance:lang }}</th>
+                    <th>{{ "From/To"|trans_finance:lang }}</th>
+                    <th>{{ "Remarks"|trans_finance:lang }}</th>
+                </tr>
         </thead>
         <tbody>
             {% for tx in transactions %}
             <tr>
-                <td>{{ tx.date|date:"d M, Y" }}</td>
+                <td>
+                    {{ tx.date|date:"d M, Y" }}
+                    <br><small style="color: var(--text-muted); font-size: 11px;">{{ tx.created_at|date:"h:i A" }}</small>
+                </td>
                 <td>
                     {% if tx.transaction_type == 'income' %}
                     <span class="badge success">Income</span>

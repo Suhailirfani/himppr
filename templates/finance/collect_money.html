@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load language_tags %}
 
-{% block title %}Collect Money from {{ home.name }}{% endblock %}
-{% block page_title %}Collect Money - {{ home.name }}{% endblock %}
+{% block title %}Collect Money from {% if lang == 'ml' %}{{ home.name }}{% else %}{{ home.name_en|default:home.name }}{% endif %}{% endblock %}
+{% block page_title %}Collect Money - {% if lang == 'ml' %}{{ home.name }}{% else %}{{ home.name_en|default:home.name }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="glass-card" style="max-width: 600px; margin: 0 auto;">
     <div style="margin-bottom: 30px; padding: 20px; border-radius: 15px; background: rgba(255, 118, 117, 0.05); border: 1px dashed var(--danger);">
-        <h4 style="color: var(--danger); margin-bottom: 5px;">Outstanding Balance: ₹{{ total_due|floatformat:2 }}</h4>
-        <p style="font-size: 13px; color: var(--text-muted);">Current advance balance: ₹{{ home.advance_balance|floatformat:2 }}</p>
+        <h4 style="color: var(--danger); margin-bottom: 5px;">{{ "Total Outstanding"|trans_finance:lang }}: ₹{{ total_due|floatformat:2 }}</h4>
+        <p style="font-size: 13px; color: var(--text-muted);">{{ "Current wallet balance"|trans_finance:lang }}: ₹{{ home.advance_balance|floatformat:2 }}</p>
     </div>
 
     <form method="post" id="collectForm">
@@ -16,42 +17,58 @@
         
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Amount to Pay (₹)</label>
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">{{ "Amount to Pay (₹)"|trans_finance:lang }}</label>
                 <div style="display: flex; gap: 10px;">
-                    <input type="number" step="0.01" name="amount" id="payAmount" class="form-input" required placeholder="0.00">
+                    <input type="text" name="amount" id="payAmount" class="form-input" placeholder="0.00" inputmode="decimal">
                     <button type="button" class="btn" style="background: var(--text-main); color: white; white-space: nowrap;" onclick="document.getElementById('payAmount').value = '{{ total_due }}'">
-                        Full Due
+                        {{ "Full Due"|trans_finance:lang }}
                     </button>
                 </div>
-                <small id="advanceHint" style="color: var(--success); display: none;">Excess will be recorded as ₹0.00 advance.</small>
+                <small id="advanceHint" style="color: var(--success); display: none;">Excess will be recorded as ₹0.00 in Wallet.</small>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Payment Method</label>
-                <select name="payment_method" class="form-input">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">{{ "Pre-pay for Upcoming Months"|trans_finance:lang }}</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 1px solid #eee;">
+                    {% for m in upcoming_months %}
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: {% if m.exists %}not-allowed{% else %}pointer{% endif %}; opacity: {% if m.exists %}0.5{% else %}1{% endif %};">
+                        <input type="checkbox" name="future_months" value="{{ m.date }}" {% if m.exists %}disabled{% endif %}>
+                        {{ m.label }}
+                    </label>
+                    {% endfor %}
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted);">Selecting these will generate invoices for those months automatically.</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">{{ "Payment Method"|trans_finance:lang }}</label>
+                <select name="payment_method" id="paymentMethod" class="form-input">
                     <option value="cash">Cash</option>
                     <option value="bank">Bank Transfer</option>
                     <option value="upi">UPI</option>
+                    {% if home.advance_balance > 0 %}
+                    <option value="wallet">Wallet Balance (₹{{ home.advance_balance }})</option>
+                    {% endif %}
                 </select>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Date Received</label>
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">{{ "Date Received"|trans_finance:lang }}</label>
                 <input type="date" name="date" class="form-input" value="{{ today|date:'Y-m-d' }}">
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Remarks (Optional)</label>
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">{{ "Remarks"|trans_finance:lang }}</label>
                 <textarea name="remarks" class="form-input" rows="2" placeholder="Any additional notes..."></textarea>
             </div>
         </div>
 
         <div style="margin-top: 32px; display: flex; gap: 15px;">
             <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">
-                Record Collection
+                {{ "Record Collection"|trans_finance:lang }}
             </button>
-            <a href="{% url 'finance:home_finance_detail' home.pk %}" class="btn" style="flex: 1; justify-content: center; background: #eee; color: #333;">
-                Cancel
+            <a href="{% url 'finance:home_finance_detail' home.pk %}?lang={{ lang }}" class="btn" style="flex: 1; justify-content: center; background: #eee; color: #333;">
+                {{ "Cancel"|trans_finance:lang }}
             </a>
         </div>
     </form>
@@ -59,19 +76,48 @@
 
 <script>
     const amountInput = document.getElementById('payAmount');
+    const methodSelect = document.getElementById('paymentMethod');
     const advanceHint = document.getElementById('advanceHint');
-    const totalDue = parseFloat('{{ total_due }}');
+    
+    const totalDue = parseFloat('{{ total_due }}') || 0;
+    const walletBalance = parseFloat('{{ home.advance_balance }}') || 0;
 
-    amountInput.addEventListener('input', function() {
-        const val = parseFloat(this.value) || 0;
-        if (val > totalDue) {
-            const advance = (val - totalDue).toFixed(2);
-            advanceHint.style.display = 'block';
-            advanceHint.innerText = 'Excess will be recorded as ₹' + advance + ' advance.';
+    function updateCalculations() {
+        // Use the raw value but treat as float for math
+        let amount = parseFloat(amountInput.value) || 0;
+        let method = methodSelect.value;
+        
+        if (method === 'wallet') {
+            if (amount > walletBalance) {
+                amountInput.style.borderColor = 'var(--danger)';
+                advanceHint.style.display = 'block';
+                advanceHint.style.color = 'var(--danger)';
+                advanceHint.innerText = 'Error: Cannot exceed wallet balance (₹' + walletBalance + ')';
+            } else {
+                amountInput.style.borderColor = '';
+                advanceHint.style.display = 'none';
+            }
         } else {
-            advanceHint.style.display = 'none';
+            amountInput.style.borderColor = '';
+            if (amount > totalDue) {
+                const advance = (amount - totalDue).toFixed(2);
+                advanceHint.style.display = 'block';
+                advanceHint.style.color = 'var(--success)';
+                advanceHint.innerText = 'Excess will be recorded as ₹' + advance + ' in Wallet.';
+            } else {
+                advanceHint.style.display = 'none';
+            }
         }
-    });
+    }
+
+    if (amountInput) {
+        amountInput.addEventListener('input', updateCalculations);
+        // Prevent scroll wheel interference
+        amountInput.addEventListener('wheel', function(e) { e.preventDefault(); }, { passive: false });
+    }
+    if (methodSelect) methodSelect.addEventListener('change', updateCalculations);
+    
+    updateCalculations();
 </script>
 
 <style>

@@ -14,7 +14,9 @@ urlpatterns = [
     path('invoice/new/', views.invoice_create, name='invoice_create'),
     path('payment/record/', views.record_payment, name='record_payment'),
     path('program/new/', views.program_create, name='program_create'),
+    path('program/<int:pk>/apply-dues/', views.apply_program_dues, name='apply_program_dues'),
     path('category/add-ajax/', views.category_create_ajax, name='category_create_ajax'),
+    path('previous-balance/add/', views.add_previous_balance, name='add_previous_balance'),
     
     # Fee Structure
     path('fees/', views.fee_structure_list, name='fee_structure_list'),

@@ -1,17 +1,23 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load language_tags %}
 
-{% block title %}{{ home.name }} Finance | Hayathul Islam Madrasa{% endblock %}
-{% block page_title %}{{ home.name }} - Individual Finance{% endblock %}
+{% block title %}{% if lang == 'ml' %}{{ home.name }}{% else %}{{ home.name_en|default:home.name }}{% endif %} Finance | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}{% if lang == 'ml' %}{{ home.name }}{% else %}{{ home.name_en|default:home.name }}{% endif %} - Individual Finance{% endblock %}
 
 {% block content %}
+<!-- Language Switcher -->
+<div class="glass-card" style="margin-bottom: 24px; padding: 10px; display: flex; gap: 10px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 300px;">
+    <a href="?lang=ml" class="btn" style="flex: 1; text-align: center; {% if lang == 'ml' %}background: var(--accent); color: white;{% else %}background: #f8f9fa; color: var(--text-muted);{% endif %} border-radius: 8px; font-weight: 700; padding: 8px;">മലയാളം</a>
+    <a href="?lang=en" class="btn" style="flex: 1; text-align: center; {% if lang == 'en' %}background: var(--accent); color: white;{% else %}background: #f8f9fa; color: var(--text-muted);{% endif %} border-radius: 8px; font-weight: 700; padding: 8px;">English</a>
+</div>
 <div class="dashboard-grid">
     <div class="glass-card stat-card">
         <div class="stat-icon warning">
             <i class="fas fa-exclamation-circle"></i>
         </div>
         <div class="stat-details">
-            <h3>Total Outstanding</h3>
+            <h3>{{ "Total Outstanding"|trans_finance:lang }}</h3>
             <div class="value" style="color: var(--danger);">₹{{ total_balance|floatformat:2 }}</div>
         </div>
     </div>
@@ -20,45 +26,56 @@
             <i class="fas fa-coins"></i>
         </div>
         <div class="stat-details">
-            <h3>Advance Balance</h3>
+            <h3>{{ "Wallet Balance"|trans_finance:lang }}</h3>
             <div class="value" style="color: var(--success);">₹{{ home.advance_balance|floatformat:2 }}</div>
         </div>
     </div>
-    <div class="glass-card" style="display: flex; align-items: center; justify-content: center;">
-        <a href="{% url 'finance:collect_money' home.pk %}" class="btn btn-primary" style="padding: 15px 30px; font-size: 16px;">
-            <i class="fas fa-money-bill-wave"></i> Collect Money
+    <div class="glass-card" style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center;">
+        <a href="{% url 'finance:collect_money' home.pk %}" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 15px; justify-content: center;">
+            <i class="fas fa-money-bill-wave"></i> {{ "Collect Money"|trans_finance:lang }}
+        </a>
+        <a href="{% url 'finance:add_previous_balance' %}?home={{ home.pk }}" class="btn btn-secondary" style="width: 100%; padding: 12px; font-size: 15px; justify-content: center;">
+            <i class="fas fa-history"></i> {{ "Add Previous Balance"|trans_finance:lang }}
         </a>
     </div>
 </div>
 
 <div class="table-container">
     <div class="table-header">
-        <h2>Invoices & Dues</h2>
+        <h2>{{ "Invoices & Dues"|trans_finance:lang }}</h2>
     </div>
     <table>
         <thead>
             <tr>
-                <th>Title / Month</th>
-                <th>Total Amount</th>
-                <th>Amount Paid</th>
-                <th>Balance</th>
-                <th>Status</th>
+                <th>{{ "Title / Month"|trans_finance:lang }}</th>
+                <th>{{ "Total Amount"|trans_finance:lang }}</th>
+                <th>{{ "Amount Paid"|trans_finance:lang }}</th>
+                <th>{{ "Balance"|trans_finance:lang }}</th>
+                <th>{{ "Status"|trans_finance:lang }}</th>
             </tr>
         </thead>
         <tbody>
             {% for inv in invoices %}
             <tr>
-                <td><strong>{{ inv.title }}</strong><br><small>{{ inv.month|date:"F Y" }}</small></td>
+                <td>
+                    <strong>{{ inv.title }}</strong>
+                    {% if inv.invoice_type == 'special_program' %}
+                    <span class="badge" style="background: rgba(108, 92, 231, 0.1); color: #6c5ce7; font-size: 10px;">Special Fund</span>
+                    {% elif inv.invoice_type == 'previous_balance' %}
+                    <span class="badge" style="background: rgba(253, 121, 168, 0.1); color: #e84393; font-size: 10px;">Previous Balance</span>
+                    {% endif %}
+                    <br><small>{{ inv.month|date:"F Y" }}</small>
+                </td>
                 <td>₹{{ inv.total_amount }}</td>
                 <td>₹{{ inv.amount_paid }}</td>
                 <td style="font-weight: 600;">₹{{ inv.balance }}</td>
                 <td>
                     {% if inv.status == 'paid' %}
-                    <span class="badge success">Paid</span>
+                    <span class="badge success">{{ "Paid"|trans_finance:lang }}</span>
                     {% elif inv.status == 'partial' %}
-                    <span class="badge warning">Partial</span>
+                    <span class="badge warning">{{ "Partial"|trans_finance:lang }}</span>
                     {% else %}
-                    <span class="badge danger">Due</span>
+                    <span class="badge danger">{{ "Due"|trans_finance:lang }}</span>
                     {% endif %}
                 </td>
             </tr>
@@ -73,22 +90,25 @@
 
 <div class="table-container" style="margin-top: 32px;">
     <div class="table-header">
-        <h2>Recent Transactions</h2>
+        <h2>{{ "Recent Transactions"|trans_finance:lang }}</h2>
     </div>
     <table>
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Method</th>
+                <th>{{ "Date"|trans_finance:lang }}</th>
+                <th>{{ "Type"|trans_finance:lang }}</th>
+                <th>{{ "Amount"|trans_finance:lang }}</th>
+                <th>{{ "Method"|trans_finance:lang }}</th>
                 <th>Remarks</th>
             </tr>
         </thead>
         <tbody>
             {% for tx in transactions %}
             <tr>
-                <td>{{ tx.date|date:"d M, Y" }}</td>
+                <td>
+                    {{ tx.date|date:"d M, Y" }}
+                    <br><small style="color: var(--text-muted); font-size: 11px;">{{ tx.created_at|date:"h:i A" }}</small>
+                </td>
                 <td>
                     {% if tx.invoice %}
                     <span class="badge primary">Fee Collection</span>

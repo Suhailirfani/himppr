@@ -24,6 +24,7 @@ class SpecialProgram(models.Model):
     name = models.CharField(max_length=150, help_text="e.g., Meelad 2026")
     date = models.DateField(null=True, blank=True)
     target_budget = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    per_member_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Fixed amount to be collected from each member")
     is_active = models.BooleanField(default=True)
     
     # Track the balance manually or calculate it
@@ -68,8 +69,17 @@ class Invoice(models.Model):
         ('paid', 'Paid'),
     ]
     
+    INVOICE_TYPE_CHOICES = [
+        ('subscription', 'Monthly Subscription'),
+        ('special_program', 'Special Program Fund'),
+        ('previous_balance', 'Previous Balance'),
+        ('other', 'Other'),
+    ]
+
     home = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='invoices')
     title = models.CharField(max_length=100, help_text="e.g., Subscription Fee - May 2026")
+    invoice_type = models.CharField(max_length=20, choices=INVOICE_TYPE_CHOICES, default='subscription')
+    program = models.ForeignKey(SpecialProgram, on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices')
     month = models.DateField(help_text="The month this fee belongs to")
     
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -85,7 +95,8 @@ class Invoice(models.Model):
         ordering = ['-month', 'home']
 
     def __str__(self):
-        return f"{self.home.name} - {self.title} ({self.status})"
+        home_name = self.home.name_en or self.home.name
+        return f"{home_name} - {self.title} ({self.status})"
     
     @property
     def balance(self):
@@ -115,6 +126,7 @@ class Transaction(models.Model):
         ('cash', 'Cash'),
         ('bank', 'Bank Transfer'),
         ('upi', 'UPI'),
+        ('wallet', 'Wallet Balance'),
     ]
 
     transaction_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)

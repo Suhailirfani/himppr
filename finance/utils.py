@@ -1,6 +1,6 @@
 from django.utils import timezone
 from datetime import date
-from .models import Invoice, FeeStructure
+from .models import Invoice, FeeStructure, Transaction
 from homes.models import Home
 
 def auto_generate_monthly_invoices():
@@ -46,6 +46,7 @@ def auto_generate_monthly_invoices():
             Invoice.objects.create(
                 home=home,
                 title=title,
+                invoice_type='subscription',
                 month=month_date,
                 total_amount=amount_to_charge,
                 amount_paid=0,

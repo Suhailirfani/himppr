@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load language_tags %}
 
 {% block title %}My Home Dashboard | Hayathul Islam Madrasa{% endblock %}
-{% block page_title %}Welcome, {{ home.name }}{% endblock %}
+{% block page_title %}Welcome, <span class="{{ home.name|font_class }}">{{ home.name }}</span>{% endblock %}
 
 {% block content %}
 {% if no_profile %}
@@ -98,7 +99,7 @@
                     {{ student.name|slice:":1" }}
                 </div>
                 <div>
-                    <h4 style="margin: 0; font-size: 14px;">{{ student.name }}</h4>
+                    <h4 style="margin: 0; font-size: 14px;" class="{{ student.name|font_class }}">{{ student.name }}</h4>
                     <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Grade: {{ student.grade }} | Age: {{ student.age }}</p>
                 </div>
             </div>

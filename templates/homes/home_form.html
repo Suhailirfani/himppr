@@ -10,9 +10,14 @@
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Head of Household</label>
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Head of Household (Malayalam)</label>
                 {{ form.name }}
                 {% for error in form.name.errors %}<small style="color: var(--danger);">{{ error }}</small>{% endfor %}
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Name in English</label>
+                {{ form.name_en }}
+                {% for error in form.name_en.errors %}<small style="color: var(--danger);">{{ error }}</small>{% endfor %}
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">House Name</label>
@@ -26,6 +31,10 @@
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Contact Number</label>
                 {{ form.contact_number }}
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Area</label>
+                {{ form.area }}
             </div>
             <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 8px;">
                 <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Address</label>
@@ -87,4 +96,72 @@
         accent-color: var(--accent);
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function isLegacyMalayalam(text) {
+        if (!text) return false;
+        // Check for Unicode Malayalam
+        if (/[\u0D00-\u0D7F]/.test(text)) return true;
+        
+        // Check for extended ASCII or specific symbols
+        for (let i = 0; i < text.length; i++) {
+            if (text.charCodeAt(i) > 127) return true;
+        }
+        
+        if (/[\^\]\[\\_\}\{\|\~`]/.test(text)) return true;
+        return false;
+    }
+
+    function toggleFontClass(input) {
+        if (isLegacyMalayalam(input.value)) {
+            input.classList.add('malayalam-text');
+        } else {
+            input.classList.remove('malayalam-text');
+        }
+    }
+
+    // Apply to specific inputs
+    const nameInput = document.querySelector('input[name="name"]');
+    const nameEnInput = document.querySelector('input[name="name_en"]');
+    const otherInputs = document.querySelectorAll('input[name="house_name"], input[name="area"], textarea[name="address"]');
+    
+    [nameInput, nameEnInput, ...otherInputs].forEach(input => {
+        if (!input) return;
+        toggleFontClass(input);
+        input.addEventListener('input', function() {
+            toggleFontClass(this);
+        });
+    });
+
+    // Transliteration logic
+    let debounceTimer;
+    if (nameInput && nameEnInput) {
+        nameEnInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const text = this.value.trim();
+            
+            if (text.length === 0) {
+                // nameInput.value = ''; // Optional: clear if empty
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`https://inputtools.google.com/request?text=${encodeURIComponent(text)}&ime=transliteration_en_ml&num=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data[0] === 'SUCCESS') {
+                            const transliterated = data[1][0][1][0];
+                            if (transliterated) {
+                                nameInput.value = transliterated;
+                                toggleFontClass(nameInput);
+                            }
+                        }
+                    })
+                    .catch(err => console.error('Transliteration error:', err));
+            }, 500); // 500ms debounce
+        });
+    }
+});
+</script>
 {% endblock %}

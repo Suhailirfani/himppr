@@ -4,12 +4,14 @@ from .models import Home, Student
 class HomeForm(forms.ModelForm):
     class Meta:
         model = Home
-        fields = ['name', 'house_name', 'home_type', 'contact_number', 'address', 'is_active', 'fee_exception']
+        fields = ['name', 'name_en', 'house_name', 'home_type', 'contact_number', 'area', 'address', 'is_active', 'fee_exception']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-input'}),
+            'name_en': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Name in English'}),
             'house_name': forms.TextInput(attrs={'class': 'form-input'}),
             'home_type': forms.Select(attrs={'class': 'form-input'}),
             'contact_number': forms.TextInput(attrs={'class': 'form-input'}),
+            'area': forms.TextInput(attrs={'class': 'form-input'}),
             'address': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
         }
 

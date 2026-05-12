@@ -20,6 +20,13 @@
     --sidebar-hover: #f0f3f8;
 }
 
+.malayalam-text {
+    font-family: 'ML-TTChandrika', 'ML-TTKarthika', 'FML-TTKarthika', 'ML-TTRevathi', 'Karthika', 'Meera', 'Manjari', 'Inter', sans-serif;
+    /* Increase font size slightly as legacy Malayalam fonts tend to render smaller */
+    font-size: 1.1em;
+    font-weight: normal !important;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -219,6 +226,8 @@ body {
     border-radius: 20px;
     padding: 24px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    overflow-x: auto;
+    width: 100%;
 }
 
 .table-header {
@@ -277,6 +286,12 @@ td {
     border-bottom: 1px solid #f1f3f5;
     color: var(--text-main);
     vertical-align: middle;
+    white-space: nowrap;
+}
+
+td.address-cell {
+    white-space: normal;
+    min-width: 200px;
 }
 
 tbody tr {

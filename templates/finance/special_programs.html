@@ -29,6 +29,11 @@
             <span style="color: var(--text-muted);">Target Budget</span>
             <strong style="color: var(--text-main);">₹{{ program.target_budget }}</strong>
         </div>
+
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; margin-bottom: 10px;">
+            <span style="color: var(--text-muted);">Per Member Fixed Amount</span>
+            <strong style="color: var(--text-main);">₹{{ program.per_member_amount }}</strong>
+        </div>
         
         <div style="display: flex; justify-content: space-between; padding-bottom: 10px; margin-bottom: 10px;">
             <span style="color: var(--success);"><i class="fas fa-arrow-down"></i> Income</span>
@@ -57,9 +62,16 @@
             </strong>
         </div>
         
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <a href="{% url 'finance:transaction_create' %}?program={{ program.id }}&type=income" class="btn" style="flex:1; background: rgba(0,184,148,0.1); color: var(--success); font-size: 13px; justify-content: center;">+ Income</a>
-            <a href="{% url 'finance:transaction_create' %}?program={{ program.id }}&type=expense" class="btn" style="flex:1; background: rgba(255,118,117,0.1); color: var(--danger); font-size: 13px; justify-content: center;">- Expense</a>
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'finance:transaction_create' %}?program={{ program.id }}&type=income" class="btn" style="flex:1; background: rgba(0,184,148,0.1); color: var(--success); font-size: 13px; justify-content: center;">+ Income</a>
+                <a href="{% url 'finance:transaction_create' %}?program={{ program.id }}&type=expense" class="btn" style="flex:1; background: rgba(255,118,117,0.1); color: var(--danger); font-size: 13px; justify-content: center;">- Expense</a>
+            </div>
+            {% if program.is_active and program.per_member_amount > 0 %}
+            <a href="{% url 'finance:apply_program_dues' program.id %}" class="btn btn-secondary" style="width: 100%; justify-content: center; font-size: 12px;" onclick="return confirm('This will create a due of ₹{{ program.per_member_amount }} for ALL active members. Continue?')">
+                <i class="fas fa-users"></i> Generate Member Dues
+            </a>
+            {% endif %}
         </div>
     </div>
     {% empty %}
