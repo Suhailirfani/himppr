@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homes List By Area - Print | Hayathul Islam Madrasa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            background: #fff;
+            padding: 20px;
+            font-size: 13px;
+            margin: 0;
+        }
+        
+        .malayalam-text {
+            font-family: 'ML-TTChandrika', 'ML-TTKarthika', 'FML-TTKarthika', 'ML-TTRevathi', 'Karthika', 'Meera', 'Manjari', 'Inter', sans-serif;
+            font-size: 1.1em;
+            font-weight: normal;
+        }
+
+        .letterhead {
+            text-align: center;
+            padding: 100px 20px 40px;
+            height: calc(100vh - 180px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .letterhead h1 {
+            margin: 0 0 10px;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #111;
+        }
+
+        .letterhead .reg-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #555;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border: 2px solid #555;
+            padding: 6px 16px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .letterhead p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 15px;
+        }
+
+        .letterhead .summary-box {
+            margin-top: 50px;
+            padding: 25px 40px;
+            border: 1px dashed #444;
+            border-radius: 12px;
+            background-color: #fafafa;
+            text-align: center;
+        }
+
+        .letterhead .summary-box .count-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        .letterhead .summary-box .count-value {
+            font-size: 48px;
+            font-weight: 800;
+            color: #6C5CE7;
+        }
+
+        .page-break {
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .area-section {
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+
+        .area-title {
+            font-size: 15px;
+            font-weight: 700;
+            border-bottom: 1.5px solid #222;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+
+        .uid {
+            font-family: monospace;
+            font-weight: 700;
+        }
+
+        .no-print-bar {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            background: #6C5CE7;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-secondary {
+            background: #eee;
+            color: #333;
+        }
+
+        @media print {
+            .no-print-bar {
+                display: none;
+            }
+            body {
+                padding: 0;
+            }
+            .letterhead {
+                height: 100vh;
+                padding-top: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print-bar">
+        <span style="font-weight: 500;">Print Preview Mode (First page is Cover/Letterhead)</span>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="window.print()" class="btn">Print List</button>
+            <button onclick="window.close()" class="btn btn-secondary">Close Page</button>
+        </div>
+    </div>
+
+    <!-- COVER PAGE / HEAD OF LETTER -->
+    <div class="letterhead">
+        <h1>HAYATHUL ISLAM MADRASA, PARUTHIPRA</h1>
+        <div>
+            <span class="reg-number">REGISTRATION NUMBER: 5950</span>
+        </div>
+        <p>Registered Homes Listing by Area</p>
+        <p>Generated on <span id="current-date"></span></p>
+        
+        <div class="summary-box">
+            <div class="count-label">TOTAL NUMBERS OF HOMES</div>
+            <div class="count-value">{{ total_homes_count }}</div>
+        </div>
+    </div>
+    
+    <!-- Push all data to Page 2 onwards -->
+    <div class="page-break"></div>
+
+    <!-- PAGE 2+: DATA TABLES -->
+    {% for area in areas %}
+        {% if area.homes.exists %}
+            <div class="area-section">
+                <div class="area-title">
+                    <span>Area ID {{ area.id }}: {{ area.name }} {% if area.name_en %}/ {{ area.name_en }}{% endif %}</span>
+                    <span style="font-size: 13px; font-weight: 600;">Total Homes: {{ area.homes.count }}</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Home ID</th>
+                            <th style="width: 35%;">Name / Head</th>
+                            <th style="width: 20%;">House Name</th>
+                            <th style="width: 15%;">Type</th>
+                            <th style="width: 15%;">Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for home in area.homes.all %}
+                        <tr>
+                            <td class="uid">{{ home.uid }}</td>
+                            <td>
+                                <div class="malayalam-text">{{ home.name }}</div>
+                                {% if home.name_en %}
+                                <div style="font-size: 11px; color: #666; margin-top: 2px;">{{ home.name_en }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="malayalam-text">{{ home.house_name|default:"-" }}</td>
+                            <td>{{ home.get_home_type_display }}</td>
+                            <td>{{ home.contact_number|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    {% if homes_without_area.exists %}
+        <div class="area-section">
+            <div class="area-title" style="border-bottom-color: #ff7675;">
+                <span>Homes Without Assigned Area</span>
+                <span style="font-size: 13px; font-weight: 600;">Total Homes: {{ homes_without_area.count }}</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Home ID</th>
+                        <th style="width: 35%;">Name / Head</th>
+                        <th style="width: 20%;">House Name</th>
+                        <th style="width: 15%;">Type</th>
+                        <th style="width: 15%;">Contact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for home in homes_without_area %}
+                    <tr>
+                        <td class="uid">{{ home.uid }}</td>
+                        <td>
+                            <div class="malayalam-text">{{ home.name }}</div>
+                            {% if home.name_en %}
+                            <div style="font-size: 11px; color: #666; margin-top: 2px;">{{ home.name_en }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="malayalam-text">{{ home.house_name|default:"-" }}</td>
+                        <td>{{ home.get_home_type_display }}</td>
+                        <td>{{ home.contact_number|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    <script>
+        // Set current date
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', options);
+        
+        // Auto trigger print
+        window.onload = function() {
+            setTimeout(() => {
+                window.print();
+            }, 600);
+        };
+    </script>
+</body>
+</html>

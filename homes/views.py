@@ -312,3 +312,21 @@ def area_create_ajax(request):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'errors': str(e)})
+
+@login_required
+def home_list_by_area(request):
+    areas = Area.objects.all().order_by('id')
+    homes_without_area = Home.objects.filter(area__isnull=True).order_by('name')
+    is_print = request.GET.get('print') == 'true'
+    total_homes_count = Home.objects.count()
+    
+    context = {
+        'areas': areas,
+        'homes_without_area': homes_without_area,
+        'is_print': is_print,
+        'total_homes_count': total_homes_count,
+    }
+    
+    if is_print:
+        return render(request, 'homes/home_list_by_area_print.html', context)
+    return render(request, 'homes/home_list_by_area.html', context)

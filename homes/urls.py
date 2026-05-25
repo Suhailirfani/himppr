@@ -17,4 +17,5 @@ urlpatterns = [
     path('areas/<int:pk>/update/', views.area_update, name='area_update'),
     path('areas/<int:pk>/delete/', views.area_delete, name='area_delete'),
     path('areas/create-ajax/', views.area_create_ajax, name='area_create_ajax'),
+    path('homes/by-area/', views.home_list_by_area, name='home_list_by_area'),
 ]

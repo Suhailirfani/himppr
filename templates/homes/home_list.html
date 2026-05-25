@@ -45,7 +45,8 @@
                     <i class="fas fa-trash"></i> Delete Selected
                 </button>
             </div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{% url 'homes:home_list_by_area' %}" class="btn" style="background: white; border: 1px solid var(--accent); color: var(--accent);"><i class="fas fa-print"></i> View by Area / Print</a>
                 <a href="{% url 'homes:home_upload_excel' %}" class="btn" style="background: white; border: 1px solid var(--accent); color: var(--accent);"><i class="fas fa-file-excel"></i> Upload via Excel</a>
                 <a href="{% url 'homes:home_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Home</a>
             </div>

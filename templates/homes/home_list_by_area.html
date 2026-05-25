@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load language_tags %}
+
+{% block title %}Homes By Area | Hayathul Islam Madrasa{% endblock %}
+{% block page_title %}Homes By Area{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+        <div>
+            <h2 style="margin-bottom: 10px; font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                Homes Grouped By Area
+                <span class="badge primary" style="font-size: 14px; padding: 6px 12px; vertical-align: middle;">
+                    Total: {{ total_homes_count }} Homes
+                </span>
+            </h2>
+            <p style="color: var(--text-muted); font-size: 14px;">Print or view all homes sorted and structured by their locality.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="{% url 'homes:home_list_by_area' %}?print=true" target="_blank" class="btn btn-primary">
+                <i class="fas fa-print"></i> Open Print View
+            </a>
+            <a href="{% url 'homes:home_list' %}" class="btn" style="background: #f1f3f5; color: #495057;">
+                Back to Manage Homes
+            </a>
+        </div>
+    </div>
+
+    {% for area in areas %}
+        {% if area.homes.exists %}
+            <div style="margin-top: 40px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 8px;">
+                <h3 style="font-size: 18px; color: var(--text-main); font-weight: 700;">
+                    <i class="fas fa-map-marker-alt" style="color: var(--accent); margin-right: 8px;"></i>
+                    Area ID {{ area.id }}: {{ area.name }} {% if area.name_en %}({{ area.name_en }}){% endif %}
+                </h3>
+                <span class="badge" style="background: rgba(108, 92, 231, 0.1); color: var(--accent); font-weight: 700;">
+                    {{ area.homes.count }} Homes
+                </span>
+            </div>
+            
+            <div style="overflow-x: auto; margin-bottom: 30px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Home ID</th>
+                            <th>Name / Head</th>
+                            <th>House Name</th>
+                            <th>Type</th>
+                            <th>Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for home in area.homes.all %}
+                        <tr>
+                            <td style="font-weight: 700; color: var(--accent); font-family: monospace;">{{ home.uid }}</td>
+                            <td>
+                                <span class="{{ home.name|font_class }}">{{ home.name }}</span>
+                                {% if home.name_en %}
+                                <br><small style="color: var(--text-muted);">{{ home.name_en }}</small>
+                                {% endif %}
+                            </td>
+                            <td class="{{ home.house_name|font_class }}">{{ home.house_name|default:"-" }}</td>
+                            <td>
+                                <span class="badge {% if home.home_type == 'member' %}primary{% else %}warning{% endif %}">
+                                    {{ home.get_home_type_display }}
+                                </span>
+                            </td>
+                            <td>{{ home.contact_number|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    {% empty %}
+        <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+            <i class="fas fa-map-marker-alt" style="font-size: 48px; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+            No areas registered.
+        </div>
+    {% endfor %}
+
+    {% if homes_without_area.exists %}
+        <div style="margin-top: 40px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--danger); padding-bottom: 8px;">
+            <h3 style="font-size: 18px; color: var(--text-main); font-weight: 700;">
+                <i class="fas fa-question-circle" style="color: var(--danger); margin-right: 8px;"></i>
+                Homes Without Assigned Area
+            </h3>
+            <span class="badge" style="background: rgba(255, 118, 117, 0.1); color: var(--danger); font-weight: 700;">
+                {{ homes_without_area.count }} Homes
+            </span>
+        </div>
+        
+        <div style="overflow-x: auto; margin-bottom: 30px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Home ID</th>
+                        <th>Name / Head</th>
+                        <th>House Name</th>
+                        <th>Type</th>
+                        <th>Contact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for home in homes_without_area %}
+                    <tr>
+                        <td style="font-weight: 700; color: var(--accent); font-family: monospace;">{{ home.uid }}</td>
+                        <td>
+                            <span class="{{ home.name|font_class }}">{{ home.name }}</span>
+                            {% if home.name_en %}
+                            <br><small style="color: var(--text-muted);">{{ home.name_en }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="{{ home.house_name|font_class }}">{{ home.house_name|default:"-" }}</td>
+                        <td>
+                            <span class="badge {% if home.home_type == 'member' %}primary{% else %}warning{% endif %}">
+                                {{ home.get_home_type_display }}
+                            </span>
+                        </td>
+                        <td>{{ home.contact_number|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
