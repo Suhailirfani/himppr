@@ -1,5 +1,15 @@
 from django.db import models
 
+class Area(models.Model):
+    name = models.CharField(max_length=150, unique=True, help_text="Name of the area/locality")
+    name_en = models.CharField(max_length=150, blank=True, help_text="Name in English")
+
+    class Meta:
+        ordering = ['id']
+
+    def __str__(self):
+        return self.name
+
 class Home(models.Model):
     HOME_TYPE_CHOICES = [
         ('member', 'Member Home'),
@@ -11,7 +21,7 @@ class Home(models.Model):
     home_type = models.CharField(max_length=20, choices=HOME_TYPE_CHOICES, default='member')
     contact_number = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
-    area = models.CharField(max_length=150, blank=True, help_text="Locality or area of residence")
+    area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True, related_name='homes', verbose_name="Area/Locality")
     
     is_active = models.BooleanField(default=True)
     fee_exception = models.BooleanField(default=False, help_text="Check if this home is exempted from paying fees (e.g., poor family)")

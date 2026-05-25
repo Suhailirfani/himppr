@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Home, Student
+from .models import Home, Student, Area
+
+@admin.register(Area)
+class AreaAdmin(admin.ModelAdmin):
+    list_display = ('name', 'name_en')
+    search_fields = ('name', 'name_en')
 
 class StudentInline(admin.TabularInline):
     model = Student

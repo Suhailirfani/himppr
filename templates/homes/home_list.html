@@ -89,7 +89,13 @@
                         </span>
                     </td>
                     <td>{{ home.contact_number|default:"-" }}</td>
-                    <td class="{{ home.area|font_class }}">{{ home.area|default:"-" }}</td>
+                    <td>
+                        {% if lang == 'en' %}
+                            <span class="{{ home.area.name_en|font_class }}">{{ home.area.name_en|default:home.area.name|default:"-" }}</span>
+                        {% else %}
+                            <span class="{{ home.area.name|font_class }}">{{ home.area.name|default:"-" }}</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <span class="badge" style="background: #eee; color: #333;">
                             {{ home.students.count }}

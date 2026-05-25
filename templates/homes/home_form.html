@@ -34,7 +34,15 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Area</label>
-                {{ form.area }}
+                <div style="display: flex; gap: 8px;">
+                    <div style="flex: 1;">
+                        {{ form.area }}
+                    </div>
+                    <button type="button" id="open-area-modal-btn" class="btn" style="padding: 10px 14px; background: var(--accent); color: white; border-radius: 10px; flex-shrink: 0;" title="Add New Area">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                {% for error in form.area.errors %}<small style="color: var(--danger);">{{ error }}</small>{% endfor %}
             </div>
             <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 8px;">
                 <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Address</label>
@@ -73,6 +81,28 @@
             </a>
         </div>
     </form>
+</div>
+
+<!-- Add Area Modal Overlay -->
+<div id="addAreaModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="margin-top: 0; color: var(--text-main); margin-bottom: 20px; font-weight: 700;">Add New Area</h3>
+        <form id="ajax-area-form" style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Area Name (Malayalam/Local)</label>
+                <input type="text" name="area_name" id="modal-area-name" class="form-input" required>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-weight: 600; color: var(--text-main); font-size: 14px;">Name in English (Optional)</label>
+                <input type="text" name="area_name_en" id="modal-area-name-en" class="form-input" placeholder="Name in English">
+            </div>
+            <div id="modal-error-msg" style="color: var(--danger); font-size: 13px; display: none;"></div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">Save</button>
+                <button type="button" id="close-area-modal-btn" class="btn" style="flex: 1; justify-content: center; background: #eee; color: #333;">Cancel</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <style>
@@ -124,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Apply to specific inputs
     const nameInput = document.querySelector('input[name="name"]');
     const nameEnInput = document.querySelector('input[name="name_en"]');
-    const otherInputs = document.querySelectorAll('input[name="house_name"], input[name="area"], textarea[name="address"]');
+    const otherInputs = document.querySelectorAll('input[name="house_name"], textarea[name="address"]');
     
     [nameInput, nameEnInput, ...otherInputs].forEach(input => {
         if (!input) return;
@@ -142,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const text = this.value.trim();
             
             if (text.length === 0) {
-                // nameInput.value = ''; // Optional: clear if empty
                 return;
             }
 
@@ -159,7 +188,118 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     })
                     .catch(err => console.error('Transliteration error:', err));
-            }, 500); // 500ms debounce
+            }, 500);
+        });
+    }
+
+    // Modal Control and AJAX Logic
+    const modal = document.getElementById('addAreaModal');
+    const openModalBtn = document.getElementById('open-area-modal-btn');
+    const closeModalBtn = document.getElementById('close-area-modal-btn');
+    const ajaxAreaForm = document.getElementById('ajax-area-form');
+    const modalAreaName = document.getElementById('modal-area-name');
+    const modalAreaNameEn = document.getElementById('modal-area-name-en');
+    const modalErrorMsg = document.getElementById('modal-error-msg');
+
+    if (openModalBtn && modal) {
+        openModalBtn.addEventListener('click', function() {
+            modal.classList.add('active');
+            modalAreaNameEn.focus();
+        });
+
+        const closeModal = function() {
+            modal.classList.remove('active');
+            ajaxAreaForm.reset();
+            modalErrorMsg.style.display = 'none';
+        };
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Transliteration inside Modal
+        let modalDebounceTimer;
+        if (modalAreaName && modalAreaNameEn) {
+            modalAreaName.addEventListener('input', function() {
+                toggleFontClass(this);
+            });
+
+            modalAreaNameEn.addEventListener('input', function() {
+                clearTimeout(modalDebounceTimer);
+                const text = this.value.trim();
+                if (text.length === 0) return;
+
+                modalDebounceTimer = setTimeout(() => {
+                    fetch(`https://inputtools.google.com/request?text=${encodeURIComponent(text)}&ime=transliteration_en_ml&num=1`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data[0] === 'SUCCESS') {
+                                const transliterated = data[1][0][1][0];
+                                if (transliterated) {
+                                    modalAreaName.value = transliterated;
+                                    toggleFontClass(modalAreaName);
+                                }
+                            }
+                        })
+                        .catch(err => console.error('Transliteration error:', err));
+                }, 500);
+            });
+        }
+
+        // AJAX Form Submit
+        ajaxAreaForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            modalErrorMsg.style.display = 'none';
+
+            const nameVal = modalAreaName.value.trim();
+            const enVal = modalAreaNameEn.value.trim();
+
+            const formData = new FormData();
+            formData.append('area_name', nameVal);
+            formData.append('area_name_en', enVal);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch('{% url "homes:area_create_ajax" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const select = document.querySelector('select[name="area"]');
+                    
+                    // check if option already exists
+                    let exists = false;
+                    for (let opt of select.options) {
+                        if (opt.value == data.id) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!exists) {
+                        const newOption = new Option(data.name, data.id);
+                        select.add(newOption);
+                    }
+                    
+                    select.value = data.id;
+                    closeModal();
+                } else {
+                    modalErrorMsg.textContent = data.errors || 'An error occurred.';
+                    modalErrorMsg.style.display = 'block';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                modalErrorMsg.textContent = 'Server error or network failure.';
+                modalErrorMsg.style.display = 'block';
+            });
         });
     }
 });

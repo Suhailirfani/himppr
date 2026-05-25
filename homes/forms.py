@@ -1,5 +1,16 @@
 from django import forms
-from .models import Home, Student
+from .models import Home, Student, Area
+
+class AreaForm(forms.ModelForm):
+    id = forms.IntegerField(required=False, label="ID", widget=forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Auto-increment if left blank'}))
+
+    class Meta:
+        model = Area
+        fields = ['id', 'name', 'name_en']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-input'}),
+            'name_en': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Name in English'}),
+        }
 
 class HomeForm(forms.ModelForm):
     class Meta:
@@ -11,9 +22,13 @@ class HomeForm(forms.ModelForm):
             'house_name': forms.TextInput(attrs={'class': 'form-input'}),
             'home_type': forms.Select(attrs={'class': 'form-input'}),
             'contact_number': forms.TextInput(attrs={'class': 'form-input'}),
-            'area': forms.TextInput(attrs={'class': 'form-input'}),
+            'area': forms.Select(attrs={'class': 'form-input'}),
             'address': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['area'].empty_label = "Select Area"
 
 class StudentForm(forms.ModelForm):
     class Meta:

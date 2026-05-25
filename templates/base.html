@@ -34,12 +34,24 @@
 
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="sidebar-header">
+        {% if request.user.is_authenticated %}
+            {% if request.user.role == 'home' %}
+                <a href="{% url 'homes:member_dashboard' %}" class="sidebar-header" style="text-decoration: none; color: inherit;">
+            {% else %}
+                <a href="{% url 'finance:dashboard' %}" class="sidebar-header" style="text-decoration: none; color: inherit;">
+            {% endif %}
+        {% else %}
+            <div class="sidebar-header">
+        {% endif %}
             <div class="logo-icon">
                 <i class="fas fa-mosque"></i>
             </div>
             <div class="logo-text">Hayathul Islam<br>Madrasa</div>
-        </div>
+        {% if request.user.is_authenticated %}
+            </a>
+        {% else %}
+            </div>
+        {% endif %}
         <ul class="nav-links">
             {% if user.role == 'home' %}
             <li class="nav-item">
@@ -80,8 +92,13 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{% url 'homes:home_list' %}" class="nav-link {% if 'homes' in request.resolver_match.app_name %}active{% endif %}">
+                <a href="{% url 'homes:home_list' %}" class="nav-link {% if 'home' in request.resolver_match.url_name %}active{% endif %}">
                     <i class="fas fa-home"></i> Manage Homes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'homes:area_list' %}" class="nav-link {% if 'area' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-map-marker-alt"></i> Manage Areas
                 </a>
             </li>
             <li class="nav-item">
@@ -107,6 +124,17 @@
         <header class="top-header">
             <h1 class="page-title">{% block page_title %}Dashboard{% endblock page_title %}</h1>
             <div class="user-profile">
+                {% if request.user.is_authenticated %}
+                    {% if request.user.role == 'home' %}
+                        <a href="{% url 'homes:member_dashboard' %}" style="color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; margin-right: 10px; padding-right: 15px; border-right: 1px solid #eee;">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    {% else %}
+                        <a href="{% url 'finance:dashboard' %}" style="color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; margin-right: 10px; padding-right: 15px; border-right: 1px solid #eee;">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    {% endif %}
+                {% endif %}
                 <span>Welcome, <strong>{{ request.user.username|default:"Committee/Staff" }}</strong></span>
                 <div class="avatar" style="position: relative; cursor: pointer;" onclick="document.getElementById('logout-form').submit();" title="Logout">
                     <i class="fas fa-sign-out-alt"></i>

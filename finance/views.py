@@ -50,7 +50,8 @@ def fee_collection(request):
             Q(name__icontains=query) |
             Q(name_en__icontains=query) |
             Q(house_name__icontains=query) |
-            Q(area__icontains=query) |
+            Q(area__name__icontains=query) |
+            Q(area__name_en__icontains=query) |
             Q(contact_number__icontains=query)
         )
     

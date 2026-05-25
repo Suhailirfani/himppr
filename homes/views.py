@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponse
-from .models import Home, Student
-from .forms import HomeForm, StudentForm
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.http import require_POST
+from .models import Home, Student, Area
+from .forms import HomeForm, StudentForm, AreaForm
 from django.db.models import Q
 from .utils import identify_and_swap
 from decimal import Decimal
@@ -43,7 +44,8 @@ def home_list(request):
             Q(name_en__icontains=query) |
             Q(house_name__icontains=query) |
             Q(contact_number__icontains=query) |
-            Q(area__icontains=query)
+            Q(area__name__icontains=query) |
+            Q(area__name_en__icontains=query)
         )
     return render(request, 'homes/home_list.html', {
         'homes': homes, 
@@ -150,9 +152,13 @@ def home_upload_excel(request):
                     home_type = 'member'
                 contact_number = str(row[4]).strip() if row[4] else ''
                 address = str(row[5]).strip() if row[5] else ''
-                area = str(row[6]).strip() if row[6] else ''
+                area_name = str(row[6]).strip() if row[6] else ''
                 fee_exception_str = str(row[7]).strip().lower() if row[7] else 'no'
                 fee_exception = fee_exception_str in ['yes', 'true', '1']
+                
+                area_obj = None
+                if area_name:
+                    area_obj, _ = Area.objects.get_or_create(name=area_name)
                 
                 Home.objects.create(
                     name=name,
@@ -161,7 +167,7 @@ def home_upload_excel(request):
                     home_type=home_type,
                     contact_number=contact_number,
                     address=address,
-                    area=area,
+                    area=area_obj,
                     fee_exception=fee_exception
                 )
                 count += 1
@@ -206,3 +212,103 @@ def home_download_template(request):
     wb.save(response)
     
     return response
+
+@login_required
+def area_list(request):
+    areas = Area.objects.all().order_by('id')
+    return render(request, 'homes/area_list.html', {'areas': areas})
+
+@login_required
+def area_create(request):
+    if request.method == 'POST':
+        form = AreaForm(request.POST)
+        if form.is_valid():
+            custom_id = form.cleaned_data.get('id')
+            if custom_id:
+                if Area.objects.filter(id=custom_id).exists():
+                    form.add_error('id', 'An area with this ID already exists.')
+                    return render(request, 'homes/area_form.html', {'form': form, 'title': 'Create Area'})
+            
+            area = form.save(commit=False)
+            if custom_id:
+                area.id = custom_id
+            area.save()
+            
+            messages.success(request, "Area created successfully.")
+            return redirect('homes:area_list')
+    else:
+        form = AreaForm()
+    return render(request, 'homes/area_form.html', {'form': form, 'title': 'Create Area'})
+
+@login_required
+def area_update(request, pk):
+    area = get_object_or_404(Area, pk=pk)
+    if request.method == 'POST':
+        form = AreaForm(request.POST, instance=area)
+        if form.is_valid():
+            new_id = form.cleaned_data.get('id')
+            old_id = area.id
+            
+            if new_id and old_id != new_id:
+                if Area.objects.filter(id=new_id).exists():
+                    form.add_error('id', 'An area with this ID already exists.')
+                    return render(request, 'homes/area_form.html', {'form': form, 'title': 'Update Area', 'edit': True})
+                
+                linked_home_ids = list(area.homes.values_list('id', flat=True))
+                Home.objects.filter(id__in=linked_home_ids).update(area=None)
+                
+                Area.objects.filter(id=old_id).update(
+                    id=new_id,
+                    name=form.cleaned_data['name'],
+                    name_en=form.cleaned_data['name_en']
+                )
+                
+                Home.objects.filter(id__in=linked_home_ids).update(area_id=new_id)
+                
+                messages.success(request, "Area updated successfully.")
+                return redirect('homes:area_list')
+            else:
+                form.save()
+                messages.success(request, "Area updated successfully.")
+                return redirect('homes:area_list')
+    else:
+        form = AreaForm(instance=area)
+    return render(request, 'homes/area_form.html', {'form': form, 'title': 'Update Area', 'edit': True})
+
+@login_required
+def area_delete(request, pk):
+    area = get_object_or_404(Area, pk=pk)
+    if request.method == 'POST':
+        area.delete()
+        messages.success(request, f"Area '{area.name}' deleted successfully.")
+        return redirect('homes:area_list')
+    return render(request, 'homes/area_confirm_delete.html', {'area': area})
+
+@login_required
+@require_POST
+def area_create_ajax(request):
+    name = request.POST.get('area_name', '').strip()
+    name_en = request.POST.get('area_name_en', '').strip()
+    
+    if not name:
+        return JsonResponse({'success': False, 'errors': 'Area name is required.'})
+    
+    # Check if duplicate exists (case-insensitive)
+    existing_area = Area.objects.filter(name__iexact=name).first()
+    if existing_area:
+        return JsonResponse({
+            'success': True,
+            'id': existing_area.id,
+            'name': existing_area.name,
+            'already_exists': True
+        })
+    
+    try:
+        area = Area.objects.create(name=name, name_en=name_en)
+        return JsonResponse({
+            'success': True,
+            'id': area.id,
+            'name': area.name
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'errors': str(e)})
