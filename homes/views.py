@@ -316,7 +316,7 @@ def area_create_ajax(request):
 @login_required
 def home_list_by_area(request):
     areas = Area.objects.all().order_by('id')
-    homes_without_area = Home.objects.filter(area__isnull=True).order_by('name')
+    homes_without_area = Home.objects.filter(area__isnull=True).order_by('id')
     is_print = request.GET.get('print') == 'true'
     total_homes_count = Home.objects.count()
     
